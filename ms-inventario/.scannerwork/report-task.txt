@@ -1,0 +1,6 @@
+projectKey=ms-inventario
+serverUrl=http://localhost:9000
+serverVersion=25.1.0.102122
+dashboardUrl=http://localhost:9000/dashboard?id=ms-inventario
+ceTaskId=e2bbb1b3-abe6-4197-9c4e-704ed6ddac97
+ceTaskUrl=http://localhost:9000/api/ce/task?id=e2bbb1b3-abe6-4197-9c4e-704ed6ddac97
