@@ -24,5 +24,3 @@ dist/
 .idea/
 *.iml
 
-# Public output
-public/
