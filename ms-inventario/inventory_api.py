@@ -1,10 +1,12 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 
+import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # Importar Flask-CORS
 from datetime import datetime
+from dotenv import load_dotenv  # Cargar dotenv
 
 app = Flask(__name__)
 
@@ -12,12 +14,17 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuración de la base de datos MySQL.
-# Ajusta los parámetros (host, usuario, contraseña, base de datos) según tu entorno.
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/bd-taller'
+# Configuración de la base de datos MySQL usando variables de entorno
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_HOST = os.getenv('DB_HOST')
+DB_NAME = os.getenv('DB_NAME')
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@mysql-inventario/{os.getenv('DB_NAME')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
+# Definir constante para evitar duplicación de literales
+MESSAGE_NOT_FOUND = 'Registro no encontrado'
 # Modelo para el Inventario
 class Inventory(db.Model):
     __tablename__ = 'inventory'
@@ -59,7 +66,7 @@ def get_inventory_item(item_id):
     if item:
         return jsonify(item.to_dict())
     else:
-        return jsonify({'message': 'Registro no encontrado'}), 404
+        return jsonify({'message': MESSAGE_NOT_FOUND}), 404
 
 # Crear un nuevo registro en el inventario
 @app.route('/inventory', methods=['POST'])
@@ -70,7 +77,7 @@ def create_inventory_item():
         nuevo_item = Inventory(
             producto=data['producto'],
             cantidad=data['cantidad'],
-            fecha_ingreso=datetime.utcnow(),  # Se asigna la fecha de ingreso actual
+            fecha_ingreso=datetime.now(datetime.timezone.utc),  # Se asigna la fecha de ingreso actual
             fecha_descargo=datetime.strptime(data['fecha_descargo'], "%Y-%m-%d %H:%M:%S") if 'fecha_descargo' in data and data['fecha_descargo'] else None,
             usuario_responsable=data['usuario_responsable']
         )
@@ -87,7 +94,7 @@ def update_inventory_item(item_id):
     data = request.get_json()
     item = Inventory.query.get(item_id)
     if not item:
-        return jsonify({'message': 'Registro no encontrado'}), 404
+        return jsonify({'message': MESSAGE_NOT_FOUND}), 404
     try:
         if 'producto' in data:
             item.producto = data['producto']
@@ -109,7 +116,7 @@ def update_inventory_item(item_id):
 def delete_inventory_item(item_id):
     item = Inventory.query.get(item_id)
     if not item:
-        return jsonify({'message': 'Registro no encontrado'}), 404
+        return jsonify({'message': MESSAGE_NOT_FOUND}), 404
     try:
         db.session.delete(item)
         db.session.commit()
