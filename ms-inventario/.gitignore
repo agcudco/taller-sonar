@@ -1,0 +1,24 @@
+# Archivos y carpetas generados por Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de entorno virtual
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# Directorios de instalación de paquetes y distribuciones
+*.egg-info/
+dist/
+build/
+
+# Archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuraciones de editores/IDE
+.vscode/
+.idea/
