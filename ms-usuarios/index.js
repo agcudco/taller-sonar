@@ -1,153 +1,131 @@
-// Importar módulos necesarios
+require('dotenv').config(); // Cargar variables de entorno desde .env
 const express = require('express');
-const mysql = require('mysql');
-const cors = require('cors'); // Importar el middleware CORS
+const mysql = require('mysql2');
+const cors = require('cors');
 
 const app = express();
 
-// Habilitar CORS para todas las peticiones
-app.use(cors());
+// Configuración segura de CORS (permitir solo el dominio específico)
+const corsOptions = {
+  origin: 'http://localhost:5173', // Cambia esto según el dominio de tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 
-// Configurar middleware para parsear JSON en las peticiones
+// Configurar Express para manejar JSON
 app.use(express.json());
 
-// Configuración de la conexión a MySQL (ajusta según tu entorno)
+// Deshabilitar encabezado "X-Powered-By" para ocultar información del framework
+app.disable('x-powered-by');
+
+// Configuración segura de conexión a MySQL
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '12345678',      // Asegúrate de usar la contraseña correcta para tu base de datos
-  database: 'bd-taller'   // Cambia 'bd-taller' por el nombre de tu base de datos
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '', // Usa una variable de entorno en .env
+  database: process.env.DB_NAME || 'bd-taller'
 });
 
-// Conectar a la base de datos
+// Conectar a la base de datos y manejar errores
 connection.connect(err => {
   if (err) {
-    console.error('Error al conectar a MySQL:', err);
+    console.error('Error al conectar a MySQL:', err.message);
     process.exit(1);
   }
   console.log('Conectado a MySQL');
 });
 
-/* =========================================================
-   **IMPORTANTE**: Este ejemplo contiene vulnerabilidades
-   intencionales, como el uso de concatenación de strings para 
-   formar consultas SQL, lo que lo hace susceptible a SQL Injection.
-   ========================================================= */
+/* ==============================================
+   ENDPOINTS SEGUROS PARA MANEJO DE USUARIOS
+   ============================================== */
 
-/* ---------------------------
-   Endpoints para USUARIOS
-------------------------------*/
-
-// Obtener todos los usuarios (vulnerable: sin validación ni parámetros)
+// Obtener todos los usuarios
 app.get('/users', (req, res) => {
-  const sql = "SELECT * FROM users";
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
+  console.log("📡 Endpoint /users llamado");
+  connection.query("SELECT * FROM users", (err, results) => {
+    if (err) {
+      console.error("Error al obtener usuarios:", err);
+      return res.status(500).json({ error: "Error al obtener usuarios" });
+    }
+    console.log("Usuarios obtenidos:", results);
     res.json(results);
   });
 });
 
-// Obtener un usuario por ID (vulnerable a SQL Injection)
+// Obtener un usuario por ID (Usando consultas preparadas)
 app.get('/users/:id', (req, res) => {
-  const id = req.params.id;
-  // Concatenación directa sin sanitización
-  const sql = "SELECT * FROM users WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
+  const { id } = req.params;
+  connection.execute("SELECT * FROM users WHERE id = ?", [id], (err, results) => {
+    if (err) {
+      console.error("Error al obtener usuario:", err);
+      return res.status(500).json({ error: "Error al obtener usuario" });
+    }
     res.json(results);
   });
 });
 
-// Crear un nuevo usuario (vulnerable: sin escapar los datos)
+// Crear un nuevo usuario
 app.post('/users', (req, res) => {
-  const username = req.body.username;
-  const role = req.body.role; // Suponiendo que 'role' es una cadena que representa el rol
-  // Consulta vulnerable: concatenación de strings
-  const sql = "INSERT INTO users (username, role) VALUES ('" + username + "', '" + role + "')";
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+  const { username, role } = req.body;
+  if (!username || !role) {
+    return res.status(400).json({ error: "Faltan datos requeridos" });
+  }
+  connection.execute(
+    "INSERT INTO users (username, role) VALUES (?, ?)",
+    [username, role],
+    (err, results) => {
+      if (err) {
+        console.error("Error al crear usuario:", err);
+        return res.status(500).json({ error: "Error al crear usuario" });
+      }
+      res.status(201).json({ message: "Usuario creado correctamente", id: results.insertId });
+    }
+  );
 });
 
-// Actualizar un usuario (vulnerable a inyección SQL)
+// Actualizar un usuario
 app.put('/users', (req, res) => {
-  const id = req.body.id;
-  const username = req.body.username;
-  const role = req.body.role;
-  const sql = "UPDATE users SET username = '" + username + "', role = '" + role + "' WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+  const { id, username, role } = req.body;
+  if (!id || !username || !role) {
+    return res.status(400).json({ error: "Faltan datos requeridos" });
+  }
+  connection.execute(
+    "UPDATE users SET username = ?, role = ? WHERE id = ?",
+    [username, role, id],
+    (err, results) => {
+      if (err) {
+        console.error("Error al actualizar usuario:", err);
+        return res.status(500).json({ error: "Error al actualizar usuario" });
+      }
+      res.json({ message: "Usuario actualizado correctamente" });
+    }
+  );
 });
 
-// Eliminar un usuario (vulnerable a SQL Injection)
+// Eliminar un usuario
 app.delete('/users', (req, res) => {
-  const id = req.body.id;
-  const sql = "DELETE FROM users WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: "ID de usuario requerido" });
+  }
+  connection.execute(
+    "DELETE FROM users WHERE id = ?",
+    [id],
+    (err, results) => {
+      if (err) {
+        console.error("Error al eliminar usuario:", err);
+        return res.status(500).json({ error: "Error al eliminar usuario" });
+      }
+      res.json({ message: "Usuario eliminado correctamente" });
+    }
+  );
 });
 
-/* ---------------------------
-   Endpoints para ROLES
-------------------------------*/
-
-// Obtener todos los roles
-app.get('/roles', (req, res) => {
-  const sql = "SELECT * FROM roles";
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Obtener un rol por ID (vulnerable)
-app.get('/roles/:id', (req, res) => {
-  const id = req.params.id;
-  const sql = "SELECT * FROM roles WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Crear un nuevo rol (vulnerable)
-app.post('/roles', (req, res) => {
-  const roleName = req.body.roleName;
-  const sql = "INSERT INTO roles (roleName) VALUES ('" + roleName + "')";
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Actualizar un rol (vulnerable)
-app.put('/roles', (req, res) => {
-  const id = req.body.id;
-  const roleName = req.body.roleName;
-  const sql = "UPDATE roles SET roleName = '" + roleName + "' WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Eliminar un rol (vulnerable)
-app.delete('/roles', (req, res) => {
-  const id = req.body.id;
-  const sql = "DELETE FROM roles WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Iniciar el servidor en el puerto 3000 (o el especificado en PORT)
+/* ==============================================
+   INICIAR SERVIDOR
+   ============================================== */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

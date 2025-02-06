@@ -9,14 +9,14 @@ class Producto {
     private $nombre;
     private $descripcion;
     private $precio;  // Precio decimal
-    private $categoria_id; // ID de la categoría a la que pertenece
+    private $categoriaId; // ID de la categoría a la que pertenece
 
     // Constructor opcional para inicializar propiedades
-    public function __construct($nombre = null, $descripcion = null, $precio = null, $categoria_id = null) {
+    public function __construct($nombre = null, $descripcion = null, $precio = null, $categoriaId = null) {
         $this->nombre = $nombre;
         $this->descripcion = $descripcion;
         $this->precio = $precio;
-        $this->categoria_id = $categoria_id;
+        $this->categoriaId = $categoriaId;
     }
 
     // Getters y Setters
@@ -46,10 +46,9 @@ class Producto {
         $this->precio = $precio;
     }
     public function getCategoriaId() {
-        return $this->categoria_id;
+        return $this->categoriaId;
     }
-    public function setCategoriaId($categoria_id) {
-        $this->categoria_id = $categoria_id;
+    public function setCategoriaId($categoriaId) {
+        $this->categoriaId = $categoriaId;
     }
 }
-?>

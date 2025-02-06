@@ -6,9 +6,9 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // Incluir el enrutador y los controladores.
-require_once __DIR__ . '/../app/core/Router.php';
-require_once __DIR__ . '/../app/controllers/CategoriaController.php';
-require_once __DIR__ . '/../app/controllers/ProductoController.php';
+require_once __DIR__ . '/../app/core/Router.php'; // Cambiar _DIR_ por __DIR__
+require_once __DIR__ . '/../app/controllers/CategoriaController.php'; // Cambiar _DIR_ por __DIR__
+require_once __DIR__ . '/../app/controllers/ProductoController.php'; // Cambiar _DIR_ por __DIR__
 
 $router = new Router();
 
