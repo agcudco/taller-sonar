@@ -6,11 +6,20 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // Incluir el enrutador y los controladores.
-require_once __DIR__ . '/../app/core/Router.php';
-require_once __DIR__ . '/../app/controllers/CategoriaController.php';
-require_once __DIR__ . '/../app/controllers/ProductoController.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $router = new Router();
+
+// Ruta predeterminada para la raíz.
+$router->add('GET', '/', function () {
+    echo json_encode([
+        "message" => "Bienvenido a la API del proyecto",
+        "endpoints" => [
+            "categorias" => "/categorias",
+            "productos" => "/productos"
+        ]
+    ], JSON_UNESCAPED_UNICODE);
+});
 
 // Rutas para Categorías.
 $categoriaController = new CategoriaController();

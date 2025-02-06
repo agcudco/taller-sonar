@@ -9,6 +9,11 @@ interface InventoryItem {
   usuario_responsable: string;
 }
 
+// Función para aplicar el operador ?? de manera general
+function either<T>(x: T | undefined | null, y: T): T {
+  return x ?? y;
+}
+
 const PythonApiPage: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
 
@@ -28,45 +33,38 @@ const PythonApiPage: React.FC = () => {
             <th style={{ border: '1px solid #ccc', padding: '8px' }}>ID</th>
             <th style={{ border: '1px solid #ccc', padding: '8px' }}>Producto</th>
             <th style={{ border: '1px solid #ccc', padding: '8px' }}>Cantidad</th>
-            <th style={{ border: '1px solid #ccc', padding: '8px' }}>
-              Fecha Ingreso
-            </th>
-            <th style={{ border: '1px solid #ccc', padding: '8px' }}>
-              Fecha Descargo
-            </th>
-            <th style={{ border: '1px solid #ccc', padding: '8px' }}>
-              Usuario Responsable
-            </th>
+            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Fecha Ingreso</th>
+            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Fecha Descargo</th>
+            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Usuario Responsable</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
             <tr key={item.id}>
               <td style={{ border: '1px solid #ccc', padding: '8px' }}>
-                {item.id}
+                {either(item.id, -1)}
               </td>
               <td style={{ border: '1px solid #ccc', padding: '8px' }}>
-                {item.producto}
+                {either(item.producto, 'Desconocido')}
               </td>
               <td style={{ border: '1px solid #ccc', padding: '8px' }}>
-                {item.cantidad}
+                {either(item.cantidad, 0)}
               </td>
               <td style={{ border: '1px solid #ccc', padding: '8px' }}>
-                {item.fecha_ingreso}
+                {either(item.fecha_ingreso, 'Fecha no disponible')}
               </td>
               <td style={{ border: '1px solid #ccc', padding: '8px' }}>
-                {item.fecha_descargo || 'N/A'}
+                {either(item.fecha_descargo, 'N/A')}
               </td>
               <td style={{ border: '1px solid #ccc', padding: '8px' }}>
-                {item.usuario_responsable}
+                {either(item.usuario_responsable, 'No asignado')}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
       <p>
-        <em>Nota:</em> La API de Python para el inventario es vulnerable a la
-        falta de validación y sanitización.
+        <em>Nota:</em> La API de Python para el inventario es vulnerable a la falta de validación y sanitización.
       </p>
     </div>
   );

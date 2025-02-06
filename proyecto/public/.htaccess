@@ -1,9 +1,0 @@
-# Habilitar la reescritura de URL.
-RewriteEngine On
-
-# Si el archivo o directorio existe, se sirve directamente.
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# Redirigir todas las demás peticiones a index.php.
-RewriteRule ^(.*)$ index.php [QSA,L]

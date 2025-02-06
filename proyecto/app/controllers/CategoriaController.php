@@ -8,6 +8,9 @@ require_once __DIR__ . '/../services/CategoriaService.php';
 class CategoriaController {
     private $categoriaService;
 
+    // Definición de constantes
+    private const INPUT_SOURCE = "php://input"; // Constante para evitar duplicación
+
     public function __construct() {
         $database = new Database();
         $db = $database->getConnection();
@@ -30,7 +33,8 @@ class CategoriaController {
     }
 
     public function store() {
-        $data = json_decode(file_get_contents("php://input"));
+        // Usando la constante INPUT_SOURCE
+        $data = json_decode(file_get_contents(self::INPUT_SOURCE));
         if (!empty($data->nombre) && !empty($data->descripcion)) {
             if ($this->categoriaService->create($data)) {
                 http_response_code(201);
@@ -46,7 +50,8 @@ class CategoriaController {
     }
 
     public function update() {
-        $data = json_decode(file_get_contents("php://input"));
+        // Usando la constante INPUT_SOURCE
+        $data = json_decode(file_get_contents(self::INPUT_SOURCE));
         if (!empty($data->id) && !empty($data->nombre) && !empty($data->descripcion)) {
             if ($this->categoriaService->update($data)) {
                 echo json_encode(['message' => 'Categoría actualizada.']);
@@ -61,7 +66,8 @@ class CategoriaController {
     }
 
     public function destroy() {
-        $data = json_decode(file_get_contents("php://input"));
+        // Usando la constante INPUT_SOURCE
+        $data = json_decode(file_get_contents(self::INPUT_SOURCE));
         if (!empty($data->id)) {
             if ($this->categoriaService->delete($data->id)) {
                 echo json_encode(['message' => 'Categoría eliminada.']);
@@ -75,4 +81,3 @@ class CategoriaController {
         }
     }
 }
-?>

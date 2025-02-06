@@ -26,7 +26,7 @@ class Router {
     }
 
     private function convertRoute($route) {
-        return "#^" . preg_replace('/\\\:[a-zA-Z0-9_]+/', '([a-zA-Z0-9_-]+)', preg_quote($route)) . "$#";
+        return "#^" . preg_replace('/\\\:[a-zA-Z0-9_]+/', '(\w+)', preg_quote($route)) . "$#";
     }
 }
 ?>

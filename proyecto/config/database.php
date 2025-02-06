@@ -4,9 +4,9 @@
  */
 class Database {
     private $host = "localhost";
-    private $db_name = "bd-taller";  // Nombre de la base de datos
-    private $username = "root";             // Usuario de MySQL
-    private $password = "";                 // Contraseña de MySQL
+    private $db_name = "proyecto";  // Nombre de la base de datos
+    private $username = "root123";             // Usuario de MySQL
+    private $password = "abcd";                 // Contraseña de MySQL
     public $conn;
 
     // Método que retorna la conexión a la base de datos

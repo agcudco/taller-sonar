@@ -1,22 +1,32 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 
+import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # Importar Flask-CORS
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 
 # Habilitar CORS para toda la aplicación
 CORS(app)
 
-# Configuración de la base de datos MySQL.
-# Ajusta los parámetros (host, usuario, contraseña, base de datos) según tu entorno.
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/bd-taller'
+# Configuración de la base de datos MySQL desde variables de entorno
+user = os.environ.get("MYSQL_USER", "root123")
+password = os.environ.get("MYSQL_PASSWORD", "abcd")
+host = os.environ.get("MYSQL_HOST", "localhost")
+database = os.environ.get("MYSQL_DATABASE", "bd-taller")
+port = os.environ.get("MYSQL_PORT", "3306")
+
+# Construcción de la URI de conexión
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Definir una constante para los mensajes
+MESSAGE_NOT_FOUND = 'Registro no encontrado'
 
 # Modelo para el Inventario
 class Inventory(db.Model):
@@ -24,7 +34,7 @@ class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     producto = db.Column(db.String(100), nullable=False)
     cantidad = db.Column(db.Integer, nullable=False)
-    fecha_ingreso = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    fecha_ingreso = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     fecha_descargo = db.Column(db.DateTime, nullable=True)
     usuario_responsable = db.Column(db.String(100), nullable=False)
 
@@ -59,7 +69,7 @@ def get_inventory_item(item_id):
     if item:
         return jsonify(item.to_dict())
     else:
-        return jsonify({'message': 'Registro no encontrado'}), 404
+        return jsonify({'message': MESSAGE_NOT_FOUND}), 404
 
 # Crear un nuevo registro en el inventario
 @app.route('/inventory', methods=['POST'])
@@ -70,7 +80,7 @@ def create_inventory_item():
         nuevo_item = Inventory(
             producto=data['producto'],
             cantidad=data['cantidad'],
-            fecha_ingreso=datetime.utcnow(),  # Se asigna la fecha de ingreso actual
+            fecha_ingreso=datetime.now(timezone.utc),  # Se asigna la fecha de ingreso actual con zona horaria UTC
             fecha_descargo=datetime.strptime(data['fecha_descargo'], "%Y-%m-%d %H:%M:%S") if 'fecha_descargo' in data and data['fecha_descargo'] else None,
             usuario_responsable=data['usuario_responsable']
         )
@@ -87,7 +97,7 @@ def update_inventory_item(item_id):
     data = request.get_json()
     item = Inventory.query.get(item_id)
     if not item:
-        return jsonify({'message': 'Registro no encontrado'}), 404
+        return jsonify({'message': MESSAGE_NOT_FOUND}), 404
     try:
         if 'producto' in data:
             item.producto = data['producto']
@@ -109,7 +119,7 @@ def update_inventory_item(item_id):
 def delete_inventory_item(item_id):
     item = Inventory.query.get(item_id)
     if not item:
-        return jsonify({'message': 'Registro no encontrado'}), 404
+        return jsonify({'message': MESSAGE_NOT_FOUND}), 404
     try:
         db.session.delete(item)
         db.session.commit()
