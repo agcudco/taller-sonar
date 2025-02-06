@@ -1,6 +1,7 @@
 <?php
-// Incluir la definición de la entidad Categoria.
-require_once __DIR__ . '/../models/Categoria.php';
+namespace App\Repositories;
+
+use App\Models\Categoria;
 
 /**
  * Clase CategoriaRepository: Encapsula las operaciones CRUD en la base de datos

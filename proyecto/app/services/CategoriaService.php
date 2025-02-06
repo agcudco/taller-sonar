@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../repositories/CategoriaRepository.php';
-require_once __DIR__ . '/../models/Categoria.php';
+namespace App\Services;
+
+use App\Repositories\CategoriaRepository;
+use App\Models\Categoria;
 
 /**
  * Clase CategoriaService: Contiene la lógica de negocio para la entidad Categoría.

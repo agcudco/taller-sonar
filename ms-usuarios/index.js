@@ -1,7 +1,9 @@
-// Importar módulos necesarios
+// Cargar variables de entorno desde .env
+require('dotenv').config(); 
 const express = require('express');
 const mysql = require('mysql');
-const cors = require('cors'); // Importar el middleware CORS
+const cors = require('cors'); // Middleware CORS
+const Joi = require('joi'); // Biblioteca para validación de datos
 
 const app = express();
 
@@ -11,16 +13,16 @@ app.use(cors());
 // Configurar middleware para parsear JSON en las peticiones
 app.use(express.json());
 
-// Configuración de la conexión a MySQL (ajusta según tu entorno)
+// Configuración de la conexión a MySQL (utilizando variables de entorno)
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',      // Asegúrate de usar la contraseña correcta para tu base de datos
-  database: 'bd-taller'   // Cambia 'bd-taller' por el nombre de tu base de datos
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 // Conectar a la base de datos
-connection.connect(err => {
+connection.connect((err) => {
   if (err) {
     console.error('Error al conectar a MySQL:', err);
     process.exit(1);
@@ -29,124 +31,83 @@ connection.connect(err => {
 });
 
 /* =========================================================
-   **IMPORTANTE**: Este ejemplo contiene vulnerabilidades
-   intencionales, como el uso de concatenación de strings para 
-   formar consultas SQL, lo que lo hace susceptible a SQL Injection.
-   ========================================================= */
+   **ENDPOINTS PARA USUARIOS**
+========================================================= */
 
-/* ---------------------------
-   Endpoints para USUARIOS
-------------------------------*/
-
-// Obtener todos los usuarios (vulnerable: sin validación ni parámetros)
+// Obtener todos los usuarios
 app.get('/users', (req, res) => {
-  const sql = "SELECT * FROM users";
+  const sql = 'SELECT * FROM users';
   connection.query(sql, (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
   });
 });
 
-// Obtener un usuario por ID (vulnerable a SQL Injection)
+// Obtener un usuario por ID (con consulta parametrizada)
 app.get('/users/:id', (req, res) => {
-  const id = req.params.id;
-  // Concatenación directa sin sanitización
-  const sql = "SELECT * FROM users WHERE id = " + id;
-  connection.query(sql, (err, results) => {
+  const sql = 'SELECT * FROM users WHERE id = ?';
+  connection.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
   });
 });
 
-// Crear un nuevo usuario (vulnerable: sin escapar los datos)
+// Crear un nuevo usuario (con validación y consulta segura)
 app.post('/users', (req, res) => {
-  const username = req.body.username;
-  const role = req.body.role; // Suponiendo que 'role' es una cadena que representa el rol
-  // Consulta vulnerable: concatenación de strings
-  const sql = "INSERT INTO users (username, role) VALUES ('" + username + "', '" + role + "')";
-  connection.query(sql, (err, results) => {
+  const schema = Joi.object({
+    username: Joi.string().min(3).max(30).required(),
+    role: Joi.string().valid('admin', 'user').required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const sql = 'INSERT INTO users (username, role) VALUES (?, ?)';
+  connection.query(sql, [req.body.username, req.body.role], (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
   });
 });
 
-// Actualizar un usuario (vulnerable a inyección SQL)
+// Actualizar un usuario
 app.put('/users', (req, res) => {
-  const id = req.body.id;
-  const username = req.body.username;
-  const role = req.body.role;
-  const sql = "UPDATE users SET username = '" + username + "', role = '" + role + "' WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
+  const schema = Joi.object({
+    id: Joi.number().integer().required(),
+    username: Joi.string().min(3).max(30).optional(),
+    role: Joi.string().valid('admin', 'user').optional(),
   });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const sql = 'UPDATE users SET username = ?, role = ? WHERE id = ?';
+  connection.query(
+    sql,
+    [req.body.username, req.body.role, req.body.id],
+    (err, results) => {
+      if (err) return res.status(500).send(err);
+      res.json(results);
+    }
+  );
 });
 
-// Eliminar un usuario (vulnerable a SQL Injection)
+// Eliminar un usuario
 app.delete('/users', (req, res) => {
-  const id = req.body.id;
-  const sql = "DELETE FROM users WHERE id = " + id;
-  connection.query(sql, (err, results) => {
+  const schema = Joi.object({
+    id: Joi.number().integer().required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const sql = 'DELETE FROM users WHERE id = ?';
+  connection.query(sql, [req.body.id], (err, results) => {
     if (err) return res.status(500).send(err);
     res.json(results);
   });
 });
 
-/* ---------------------------
-   Endpoints para ROLES
-------------------------------*/
-
-// Obtener todos los roles
-app.get('/roles', (req, res) => {
-  const sql = "SELECT * FROM roles";
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Obtener un rol por ID (vulnerable)
-app.get('/roles/:id', (req, res) => {
-  const id = req.params.id;
-  const sql = "SELECT * FROM roles WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Crear un nuevo rol (vulnerable)
-app.post('/roles', (req, res) => {
-  const roleName = req.body.roleName;
-  const sql = "INSERT INTO roles (roleName) VALUES ('" + roleName + "')";
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Actualizar un rol (vulnerable)
-app.put('/roles', (req, res) => {
-  const id = req.body.id;
-  const roleName = req.body.roleName;
-  const sql = "UPDATE roles SET roleName = '" + roleName + "' WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Eliminar un rol (vulnerable)
-app.delete('/roles', (req, res) => {
-  const id = req.body.id;
-  const sql = "DELETE FROM roles WHERE id = " + id;
-  connection.query(sql, (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
-});
-
-// Iniciar el servidor en el puerto 3000 (o el especificado en PORT)
+// Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);

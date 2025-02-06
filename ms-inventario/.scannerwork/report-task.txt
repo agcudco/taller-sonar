@@ -1,0 +1,6 @@
+projectKey=Python_mv
+serverUrl=http://localhost:9000
+serverVersion=25.1.0.102122
+dashboardUrl=http://localhost:9000/dashboard?id=Python_mv
+ceTaskId=704cccf9-5923-4ab7-8dc7-5c1f4e4b318d
+ceTaskUrl=http://localhost:9000/api/ce/task?id=704cccf9-5923-4ab7-8dc7-5c1f4e4b318d
