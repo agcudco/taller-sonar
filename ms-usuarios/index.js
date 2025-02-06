@@ -1,3 +1,25 @@
+// =========================================================
+//    Archivo .env necesario en la carpeta ms-usuarios
+// ========================================================= 
+// DB_HOST=localhost
+// DB_USER=root
+// DB_PASSWORD=root
+// DB_NAME=bd-taller
+// PORT=3000
+
+// =========================================================
+//    Comandos para ejecutar el análisis de SonarQube
+// =========================================================
+// 1. Generar el reporte ESLint:
+// ```bash
+// npx eslint . --format json -o eslint-report.json
+// ```
+// 2. Ejecutar SonarQube:
+// ```bash
+// sonar-scanner
+
+// CAMBIOS
+
 // Cargar variables de entorno desde .env
 require('dotenv').config(); 
 const express = require('express');

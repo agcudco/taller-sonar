@@ -1,3 +1,46 @@
+# ***********************************************************
+# EN REQUIREMENTES.TXT (SOLO SE INCLUYE python-dotenv==1.0.1)
+# O SOLO EJECUTAR DENTRO DEL DIRECTORIO pip install python-dotenv
+# ************************************************************
+# Flask==2.0.3
+# Flask-SQLAlchemy==2.5.1
+# PyMySQL==1.0.2
+# SQLAlchemy==1.4.46
+# Werkzeug==2.0.3
+# python-dotenv==1.0.1
+# ************************************************************
+# LUEGO EJECUTAR pip install -r requirements.txt
+# **************************************************************
+
+# ------------------------------------------------------------------
+# PRIMERA VULNERABILIDAD - CREDENCIALES
+# -------------------------------------------------------------------
+# 1. CREAR UN ARCHIVO .env en la raiz de ms-inventario
+# --------------------------------------------------------------------
+# Archivo .env:
+# *****************************************************************
+# DB_USER=root
+# DB_PASSWORD=admin
+# DB_HOST=localhost
+# DB_NAME=bd-taller
+# *****************************************************************
+
+# ------------------------------------------------------------------
+# SEGUNDA VULNERABILIDAD - Constante de Texto
+# -------------------------------------------------------------------
+# 1. Agregar constante de texto 
+# MESSAGE_NOT_FOUND = 'Registro no encontrado'
+# 2. Cambiar lineas de codigo (Adjunto en el codigo final)
+# ------------------------------------------------------------------
+# ------------------------------------------------------------------
+# TERCERA VULNERABILIDAD -  Cambiar por zoneinfo
+# -------------------------------------------------------------------
+# 1. Importar libreria
+# from zoneinfo import ZoneInfo 
+# 2. Cambiar lineas de codigo (Adjunto en el codigo final)
+# -------------------------------------------------------------------
+
+
 # CODIGO FINAL DEL inventory_api.py
 #!/usr/bin/env python  
 # -*- coding: utf-8 -*-
