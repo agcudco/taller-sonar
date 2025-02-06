@@ -13,7 +13,7 @@ CORS(app)
 
 # Configuración de la base de datos MySQL.
 # Ajusta los parámetros (host, usuario, contraseña, base de datos) según tu entorno.
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/bd-taller'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost/bd-taller'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
