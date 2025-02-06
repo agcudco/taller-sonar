@@ -1,12 +1,13 @@
 <?php
+namespace App\Config;
 /**
  * Clase Database: Se encarga de establecer la conexión con la base de datos MySQL.
  */
 class Database {
     private $host = "localhost";
-    private $db_name = "bd-taller";  // Nombre de la base de datos
+    private $db_name = "bd_taller";  // Nombre de la base de datos
     private $username = "root";             // Usuario de MySQL
-    private $password = "";                 // Contraseña de MySQL
+    private $password = "password";                 // Contraseña de MySQL
     public $conn;
 
     // Método que retorna la conexión a la base de datos

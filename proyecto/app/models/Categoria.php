@@ -1,4 +1,5 @@
 <?php
+namespace App\Models;
 /**
  * Clase Categoria: Representa la entidad "Categoría".
  * Contiene propiedades privadas y sus respectivos getters y setters.

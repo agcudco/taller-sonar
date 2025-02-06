@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../services/CategoriaService.php';
+namespace App\Controllers;
+
+use App\Services\CategoriaService;
+use App\Config\Database;
 
 /**
  * Clase CategoriaController: Gestiona las peticiones HTTP relacionadas con las Categorías.
@@ -9,8 +11,11 @@ class CategoriaController {
     private $categoriaService;
 
     public function __construct() {
+        // Aquí el namespace Database ya está importado
         $database = new Database();
         $db = $database->getConnection();
+        
+        // Aquí el namespace CategoriaService ya está importado
         $this->categoriaService = new CategoriaService($db);
     }
 
